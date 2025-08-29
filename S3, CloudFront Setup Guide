@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: AWS CloudFront & S3 Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .task-item input:checked + label span:first-child {
+            background-color: #34D399;
+            border-color: #34D399;
+        }
+        .task-item input:checked + label span svg {
+            display: block;
+        }
+        .task-item input:checked + label {
+            text-decoration: line-through;
+            color: #6B7280;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6 md:p-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">AWS CloudFront & S3 Setup Guide</h1>
+            <p class="mt-2 text-lg text-gray-600">An interactive checklist to guide you through the setup process.</p>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex justify-between mb-1">
+                <span class="text-base font-medium text-blue-700">Progress</span>
+                <span class="text-sm font-medium text-blue-700" id="progress-text">0% Complete</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Steps Accordion -->
+        <div class="space-y-4">
+
+            <!-- Step 1: Prepare Your S3 Bucket -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none">
+                    <span>Step 1: Prepare Your S3 Bucket</span>
+                    <svg class="w-6 h-6 shrink-0 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-5 border-t border-gray-200 space-y-4">
+                        <p class="text-gray-600">The first step is to have an S3 bucket with the content you want to distribute.</p>
+                        <div class="task-item">
+                            <input type="checkbox" id="task1-1" class="hidden task-checkbox">
+                            <label for="task1-1" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Create an S3 Bucket with a globally unique name.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task1-2" class="hidden task-checkbox">
+                            <label for="task1-2" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Upload your static content (HTML, CSS, JS, images).
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task1-3" class="hidden task-checkbox">
+                            <label for="task1-3" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Ensure "Block all public access" is enabled for the bucket.
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Create an Origin Access Control (OAC) -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none">
+                    <span>Step 2: Create an Origin Access Control (OAC)</span>
+                    <svg class="w-6 h-6 shrink-0 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-5 border-t border-gray-200 space-y-4">
+                        <p class="text-gray-600">OAC securely connects your CloudFront distribution to your S3 bucket.</p>
+                        <div class="task-item">
+                            <input type="checkbox" id="task2-1" class="hidden task-checkbox">
+                            <label for="task2-1" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                In CloudFront, navigate to Security > Origin access and click Create.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task2-2" class="hidden task-checkbox">
+                            <label for="task2-2" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Name the OAC and select S3 as the origin type.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task2-3" class="hidden task-checkbox">
+                            <label for="task2-3" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Copy the generated bucket policy to your clipboard.
+                            </label>
+                            <div class="mt-2 pl-8">
+                                <button class="copy-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-300" data-clipboard-text='{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Principal": { "Service": "cloudfront.amazonaws.com" }, "Action": "s3:GetObject", "Resource": "arn:aws:s3:::YOUR-BUCKET-NAME/*", "Condition": { "StringEquals": { "AWS:SourceArn": "arn:aws:cloudfront::YOUR-AWS-ACCOUNT-ID:distribution/YOUR-DISTRIBUTION-ID" } } } ] }'>
+                                    Copy Example Policy
+                                </button>
+                                <p class="text-xs text-gray-500 mt-1">This is an example. Use the policy generated by AWS.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Create the CloudFront Distribution -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none">
+                    <span>Step 3: Create the CloudFront Distribution</span>
+                    <svg class="w-6 h-6 shrink-0 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-5 border-t border-gray-200 space-y-4">
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-1" class="hidden task-checkbox">
+                            <label for="task3-1" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Start a new distribution and select your S3 bucket as the origin domain.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-2" class="hidden task-checkbox">
+                            <label for="task3-2" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Choose "Origin access control settings" and select your new OAC.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-3" class="hidden task-checkbox">
+                            <label for="task3-3" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Go to S3 and paste the copied policy into the bucket's permissions.
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-4" class="hidden task-checkbox">
+                            <label for="task3-4" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Set Viewer protocol policy to "Redirect HTTP to HTTPS".
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-5" class="hidden task-checkbox">
+                            <label for="task3-5" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Set a Default root object (e.g., index.html).
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task3-6" class="hidden task-checkbox">
+                            <label for="task3-6" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Click "Create distribution".
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Test Your CloudFront Distribution -->
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                <button class="accordion-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-gray-800 hover:bg-gray-100 focus:outline-none">
+                    <span>Step 4: Test Your CloudFront Distribution</span>
+                    <svg class="w-6 h-6 shrink-0 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content">
+                    <div class="p-5 border-t border-gray-200 space-y-4">
+                        <div class="task-item">
+                            <input type="checkbox" id="task4-1" class="hidden task-checkbox">
+                            <label for="task4-1" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Wait for the distribution status to change from "Deploying" to "Deployed".
+                            </label>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task4-2" class="hidden task-checkbox">
+                            <label for="task4-2" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Copy the Distribution domain name.
+                            </label>
+                             <div class="mt-2 pl-8">
+                                <button class="copy-btn bg-gray-200 text-gray-700 px-3 py-1 rounded-md text-sm hover:bg-gray-300" data-clipboard-text="d1234abcd.cloudfront.net">
+                                    Copy Example Domain
+                                </button>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <input type="checkbox" id="task4-3" class="hidden task-checkbox">
+                            <label for="task4-3" class="flex items-center cursor-pointer text-gray-700">
+                                <span class="w-5 h-5 mr-3 border-2 border-gray-300 rounded-sm flex items-center justify-center transition-colors">
+                                    <svg class="w-3 h-3 text-white hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </span>
+                                Paste the domain name into your browser to test.
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Accordion Logic ---
+            const accordions = document.querySelectorAll('.accordion-toggle');
+            accordions.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('svg');
+
+                    // Close other accordions
+                    accordions.forEach(otherButton => {
+                        if (otherButton !== button) {
+                            otherButton.nextElementSibling.style.maxHeight = null;
+                            otherButton.querySelector('svg').classList.remove('rotate-180');
+                        }
+                    });
+
+                    // Toggle current accordion
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('rotate-180');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.classList.add('rotate-180');
+                    }
+                });
+            });
+
+            // --- Progress Bar & Checkbox Logic ---
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const totalTasks = checkboxes.length;
+
+            function updateProgress() {
+                const checkedTasks = document.querySelectorAll('.task-checkbox:checked').length;
+                const percentage = totalTasks > 0 ? Math.round((checkedTasks / totalTasks) * 100) : 0;
+                
+                progressBar.style.width = percentage + '%';
+                progressText.textContent = percentage + '% Complete';
+            }
+
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateProgress);
+            });
+            
+            // Initial progress update
+            updateProgress();
+
+            // --- Copy to Clipboard Logic ---
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const textToCopy = button.getAttribute('data-clipboard-text');
+                    
+                    // Create a temporary textarea element to copy the text
+                    const textArea = document.createElement('textarea');
+                    textArea.value = textToCopy;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy'); // Fallback for older browsers
+                        const originalText = button.textContent;
+                        button.textContent = 'Copied!';
+                        button.classList.add('bg-green-500', 'text-white');
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            button.classList.remove('bg-green-500', 'text-white');
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                    }
+                    document.body.removeChild(textArea);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
