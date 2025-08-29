@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide: Secure AWS S3 & CloudFront Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Sky Blue -->
+    <!-- Application Structure Plan: The application is designed as a tabbed single-page interface with five thematic sections: Overview, Why OAC?, Implementation, Benefits, and Troubleshooting. This structure was chosen to transform the linear, text-heavy report into a non-linear, interactive experience. It allows users to quickly navigate to their area of interest—be it understanding the core concept, comparing technologies, following a guide, seeing the business value, or solving a problem. This task-oriented design enhances usability and information retention by breaking down complex information into digestible, interactive modules. -->
+    <!-- Visualization & Content Choices: 
+        - Architecture Diagram (Overview): Report Info -> S3/CloudFront relationship. Goal -> Organize/Inform. Viz -> HTML/CSS flowchart. Interaction -> Hover for details. Justification -> Provides an immediate visual mental model of the architecture. Method -> Tailwind CSS.
+        - OAC vs. OAI Chart (Why OAC?): Report Info -> OAC/OAI feature table. Goal -> Compare. Viz -> Bar Chart. Interaction -> Click buttons to update chart data for different features. Justification -> Dynamically visualizes the superiority of OAC over a static table, making the comparison more impactful. Library -> Chart.js.
+        - Implementation Accordion (Implementation): Report Info -> 4-step setup guide. Goal -> Organize/Inform. Viz -> Accordion UI. Interaction -> Click to expand/collapse steps. Justification -> Simplifies a dense process into manageable steps, reducing cognitive load. Method -> Vanilla JS.
+        - Benefits Charts (Benefits): Report Info -> Business case analysis. Goal -> Inform. Viz -> Bar and Doughnut charts. Interaction -> Hover for tooltips. Justification -> Quantifies abstract benefits like performance and cost, making them more tangible. Library -> Chart.js.
+        - Troubleshooting UI (Troubleshooting): Report Info -> 403/404 error diagnosis. Goal -> Inform. Viz -> Interactive two-panel selector. Interaction -> Click error type to display solutions. Justification -> Provides a quick, problem-solution format for common issues. Method -> Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-color: transparent;
+            color: #4b5563;
+        }
+        .section-content {
+            display: none;
+        }
+        .section-content.active {
+            display: block;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-5xl font-bold text-slate-900">Secure Content Delivery on AWS</h1>
+            <p class="mt-2 md:mt-4 text-lg text-slate-600">An Interactive Guide to CloudFront with a Private S3 Origin</p>
+        </header>
+
+        <nav class="mb-8 border-b border-slate-200">
+            <ul class="flex flex-wrap -mb-px justify-center text-sm font-medium text-center" id="tab-nav">
+                <li class="mr-2"><a href="#" data-tab="overview" class="inline-block p-4 border-b-2 rounded-t-lg tab-active">Overview</a></li>
+                <li class="mr-2"><a href="#" data-tab="why-oac" class="inline-block p-4 border-b-2 rounded-t-lg tab-inactive">Why OAC?</a></li>
+                <li class="mr-2"><a href="#" data-tab="implementation" class="inline-block p-4 border-b-2 rounded-t-lg tab-inactive">Implementation</a></li>
+                <li class="mr-2"><a href="#" data-tab="benefits" class="inline-block p-4 border-b-2 rounded-t-lg tab-inactive">Benefits</a></li>
+                <li><a href="#" data-tab="troubleshooting" class="inline-block p-4 border-b-2 rounded-t-lg tab-inactive">Troubleshooting</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="overview" class="section-content active">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Architecture at a Glance</h2>
+                    <p class="mb-6 text-slate-600">This architecture represents the modern gold standard for delivering static content securely and efficiently. It uses a private S3 bucket as the content origin, shielded by a global CloudFront distribution. This "secure-by-default" approach prevents direct public access to your files, mitigating common security risks while leveraging CloudFront's edge network for high performance and low latency worldwide.</p>
+                    
+                    <div class="w-full p-4 md:p-8 bg-slate-50 rounded-lg">
+                        <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                            <div class="flex items-center">
+                                <div class="p-4 bg-blue-100 text-blue-800 rounded-lg shadow-sm">
+                                    <span class="text-2xl">👤</span>
+                                    <p class="font-bold">End User</p>
+                                </div>
+                                <div class="w-16 md:w-24 h-1 bg-slate-300 mx-2"></div>
+                            </div>
+                            
+                            <div class="relative group p-4 bg-green-100 text-green-800 rounded-lg shadow-sm">
+                                <span class="text-2xl">🌍</span>
+                                <p class="font-bold">CloudFront CDN</p>
+                                <div class="absolute bottom-full mb-2 w-64 p-2 text-sm text-white bg-slate-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 -translate-x-1/2 left-1/2">
+                                    Caches content at global edge locations for low-latency delivery.
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <div class="w-16 md:w-24 h-1 bg-slate-300 mx-2 border-t-2 border-dashed border-slate-500"></div>
+                                <div class="relative group p-4 bg-orange-100 text-orange-800 rounded-lg shadow-sm">
+                                    <span class="text-2xl">🔒</span>
+                                    <p class="font-bold">Private S3 Bucket</p>
+                                    <div class="absolute bottom-full mb-2 w-64 p-2 text-sm text-white bg-slate-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 -translate-x-1/2 left-1/2">
+                                        Secure origin storage. "Block all public access" is enabled. Access is granted only to CloudFront via OAC.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-center mt-4 text-sm text-slate-500">The dashed line indicates a secure, authenticated connection via Origin Access Control (OAC).</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="why-oac" class="section-content">
+                 <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">OAC: The Modern Standard for S3 Access</h2>
+                    <p class="mb-6 text-slate-600">Origin Access Control (OAC) is the recommended method for securely connecting CloudFront to S3, replacing the legacy Origin Access Identity (OAI). OAC provides enhanced security, broader feature support, and is the future-proof choice for all new deployments. Use the buttons below to visually compare key features.</p>
+                    <div class="text-center mb-6">
+                        <button id="btn-security" class="oac-chart-btn bg-blue-500 text-white px-4 py-2 rounded-md mr-2">Security</button>
+                        <button id="btn-features" class="oac-chart-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md mr-2">Feature Support</button>
+                        <button id="btn-future" class="oac-chart-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md">Future-Proofing</button>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="oacChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="implementation" class="section-content">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Step-by-Step Implementation Guide</h2>
+                    <p class="mb-6 text-slate-600">Follow this four-step process to build the secure content delivery pipeline. Click on each step to expand the details. This interactive guide breaks down the configuration into manageable parts, from preparing your S3 bucket to testing the final distribution.</p>
+                    <div id="accordion-container" class="space-y-2">
+                    </div>
+                </div>
+            </section>
+
+            <section id="benefits" class="section-content">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">The Business Case: Why This Architecture Wins</h2>
+                    <p class="mb-8 text-slate-600">This architecture delivers tangible benefits across three key areas: performance, cost, and security. By caching content globally, you reduce latency for users. By minimizing data transfer from S3, you optimize costs. And by keeping your origin private, you create a robust, layered security posture.</p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Performance Boost</h3>
+                            <p class="text-sm text-slate-500 text-center mb-4">CloudFront's CDN dramatically reduces page load times by serving content from an edge location close to the user.</p>
+                            <div class="chart-container h-64 md:h-80">
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold mb-2 text-center">Cost Optimization</h3>
+                            <p class="text-sm text-slate-500 text-center mb-4">Data transfer from S3 to CloudFront is free. Caching at the edge reduces expensive S3 GET requests.</p>
+                            <div class="chart-container h-64 md:h-80">
+                                <canvas id="costChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="troubleshooting" class="section-content">
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 text-slate-900">Common Issues & Solutions</h2>
+                    <p class="mb-6 text-slate-600">Encountering an error? The "403 Access Denied" is the most common issue and usually points to a misconfiguration in the trust relationship between CloudFront and S3. Select an error below to see a checklist of common causes and diagnostic steps to resolve it.</p>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="md:w-1/3">
+                            <ul id="trouble-nav" class="space-y-2">
+                                <li><button data-issue="403" class="w-full text-left p-3 rounded-lg bg-red-100 text-red-800 font-semibold border-2 border-red-200">403 Access Denied</button></li>
+                                <li><button data-issue="404" class="w-full text-left p-3 rounded-lg bg-slate-100 hover:bg-slate-200">404 Not Found</button></li>
+                                <li><button data-issue="cache" class="w-full text-left p-3 rounded-lg bg-slate-100 hover:bg-slate-200">Stale Content (Cache)</button></li>
+                            </ul>
+                        </div>
+                        <div class="md:w-2/3 bg-slate-50 p-4 rounded-lg">
+                            <div id="trouble-content">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('#tab-nav a');
+            const sections = document.querySelectorAll('.section-content');
+
+            function switchTab(tabId) {
+                tabs.forEach(tab => {
+                    const isSelected = tab.dataset.tab === tabId;
+                    tab.classList.toggle('tab-active', isSelected);
+                    tab.classList.toggle('tab-inactive', !isSelected);
+                });
+                sections.forEach(section => {
+                    section.classList.toggle('active', section.id === tabId);
+                });
+            }
+
+            document.getElementById('tab-nav').addEventListener('click', (e) => {
+                e.preventDefault();
+                if (e.target.tagName === 'A') {
+                    const tabId = e.target.dataset.tab;
+                    switchTab(tabId);
+                }
+            });
+
+            const oacChartData = {
+                security: {
+                    labels: ['OAC', 'OAI (Legacy)'],
+                    datasets: [{
+                        label: 'Security Score (Conceptual)',
+                        data: [95, 60],
+                        backgroundColor: ['#3b82f6', '#ef4444'],
+                        borderColor: ['#2563eb', '#dc2626'],
+                        borderWidth: 1
+                    }]
+                },
+                features: {
+                    labels: ['OAC', 'OAI (Legacy)'],
+                    datasets: [{
+                        label: 'SSE-KMS Support',
+                        data: [1, 0],
+                        backgroundColor: '#3b82f6',
+                    }, {
+                        label: 'All HTTP Methods',
+                        data: [1, 0],
+                        backgroundColor: '#60a5fa',
+                    }]
+                },
+                future: {
+                    labels: ['OAC', 'OAI (Legacy)'],
+                    datasets: [{
+                        label: 'Supported in New AWS Regions',
+                        data: [100, 0],
+                        backgroundColor: ['#3b82f6', '#9ca3af'],
+                        borderColor: ['#2563eb', '#6b7280'],
+                        borderWidth: 1
+                    }]
+                }
+            };
+
+            const oacChartConfig = {
+                type: 'bar',
+                data: oacChartData.security,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    if (this.chart.config.data.datasets[0].label.includes('Score') || this.chart.config.data.datasets[0].label.includes('Supported')) {
+                                        return value + '%';
+                                    }
+                                    return value == 1 ? 'Yes' : 'No';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                         if (context.dataset.label.includes('Score') || context.dataset.label.includes('Supported')) {
+                                            label += context.parsed.y + '%';
+                                        } else {
+                                            label += context.parsed.y == 1 ? 'Yes' : 'No';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            
+            let oacChart;
+            if (document.getElementById('oacChart')) {
+                 oacChart = new Chart(document.getElementById('oacChart'), oacChartConfig);
+            }
+
+            document.querySelectorAll('.oac-chart-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.oac-chart-btn').forEach(btn => {
+                        btn.classList.remove('bg-blue-500', 'text-white');
+                        btn.classList.add('bg-slate-200', 'text-slate-700');
+                    });
+                    this.classList.add('bg-blue-500', 'text-white');
+                    this.classList.remove('bg-slate-200', 'text-slate-700');
+                    
+                    const dataType = this.id.split('-')[1];
+                    oacChart.data = oacChartData[dataType];
+                    
+                    if (dataType === 'features') {
+                        oacChart.options.scales.y.max = 1;
+                        oacChart.options.scales.y.ticks.stepSize = 1;
+                    } else {
+                        oacChart.options.scales.y.max = 100;
+                    }
+                    oacChart.update();
+                });
+            });
+
+            const accordionData = [
+                {
+                    title: "Step 1: Prepare Your S3 Bucket",
+                    content: "Create an S3 bucket with a globally unique name. Crucially, ensure 'Block all public access' is enabled. This is the foundation of the secure architecture. Upload your static content (HTML, CSS, images) to this bucket. The files will not be publicly accessible yet."
+                },
+                {
+                    title: "Step 2: Create an Origin Access Control (OAC)",
+                    content: "In the CloudFront console, navigate to 'Origin access' and create a new control setting. Give it a descriptive name, select 'S3' as the origin type, and keep the default 'Sign requests' behavior. This OAC will act as the secure principal that CloudFront uses to access S3."
+                },
+                {
+                    title: "Step 3: Create the CloudFront Distribution",
+                    content: "Create a new CloudFront distribution. Select your S3 bucket as the 'Origin domain'. For 'Origin access', choose 'Origin access control settings' and select the OAC you just created. CloudFront will provide a bucket policy—copy it and paste it into your S3 bucket's permissions tab. Also, set 'Viewer protocol policy' to 'Redirect HTTP to HTTPS' and specify a 'Default root object' like 'index.html'."
+                },
+                {
+                    title: "Step 4: Test Your Distribution",
+                    content: "After the distribution deploys (which can take a few minutes), copy its domain name (e.g., d123.cloudfront.net) and paste it into your browser. Your content should load. To verify security, try accessing an object directly via its S3 URL; you should receive an 'Access Denied' error."
+                }
+            ];
+
+            const accordionContainer = document.getElementById('accordion-container');
+            accordionData.forEach((item, index) => {
+                const accordionItem = document.createElement('div');
+                accordionItem.className = 'border border-slate-200 rounded-lg';
+                accordionItem.innerHTML = `
+                    <button class="accordion-header w-full flex justify-between items-center p-4 text-left font-semibold text-slate-800 bg-slate-50 hover:bg-slate-100 focus:outline-none">
+                        <span>${item.title}</span>
+                        <span class="accordion-icon transform rotate-0 transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="accordion-content">
+                        <p class="p-4 pt-0 text-slate-600">${item.content}</p>
+                    </div>
+                `;
+                accordionContainer.appendChild(accordionItem);
+            });
+
+            accordionContainer.addEventListener('click', (e) => {
+                const header = e.target.closest('.accordion-header');
+                if (!header) return;
+
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.accordion-icon');
+                const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                document.querySelectorAll('.accordion-content').forEach(c => c.style.maxHeight = '0px');
+                document.querySelectorAll('.accordion-icon').forEach(i => i.style.transform = 'rotate(0deg)');
+
+                if (!isOpen) {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+            
+            if (document.getElementById('performanceChart')) {
+                new Chart(document.getElementById('performanceChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Direct S3 (Public)', 'CloudFront CDN'],
+                        datasets: [{
+                            label: 'Average Latency (ms)',
+                            data: [250, 60],
+                            backgroundColor: ['#fca5a5', '#93c5fd'],
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+
+            if (document.getElementById('costChart')) {
+                new Chart(document.getElementById('costChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['S3 GET Requests & Data Transfer', 'CloudFront Requests & Data Transfer'],
+                        datasets: [{
+                            label: 'Relative Cost at Scale',
+                            data: [100, 45],
+                            backgroundColor: ['#fca5a5', '#93c5fd'],
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            const troubleData = {
+                '403': {
+                    title: 'Diagnosing 403 Access Denied',
+                    content: `
+                        <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>Verify S3 Bucket Policy:</strong> Ensure the policy correctly grants 's3:GetObject' to the 'cloudfront.amazonaws.com' service principal and has a condition restricting it to your distribution's ARN.</li>
+                            <li><strong>Check OAC Association:</strong> In CloudFront, confirm the S3 origin is correctly linked to your OAC.</li>
+                            <li><strong>S3 Block Public Access:</strong> Make sure 'Block all public access' is still enabled on the bucket. The bucket policy for OAC correctly bypasses this.</li>
+                            <li><strong>Object Ownership:</strong> The AWS account that owns the bucket must also own the objects within it.</li>
+                        </ul>
+                    `
+                },
+                '404': {
+                    title: 'Diagnosing 404 Not Found',
+                    content: `
+                         <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>Object Does Not Exist:</strong> Double-check that the file path and name are correct in the S3 bucket. Paths are case-sensitive.</li>
+                            <li><strong>Default Root Object:</strong> If you see this at the root URL, ensure your 'Default root object' (e.g., index.html) is set in the CloudFront distribution settings and the file exists in the S3 root.</li>
+                            <li><strong>Masked 403 Error:</strong> Sometimes, a permissions issue can manifest as a 404. Check the 403 steps as well.</li>
+                         </ul>
+                    `
+                },
+                'cache': {
+                    title: 'Handling Stale Content (Cache)',
+                    content: `
+                         <ul class="list-disc list-inside space-y-2 text-slate-700">
+                            <li><strong>TTL Expiration:</strong> CloudFront caches content based on its Time-to-Live (TTL). If you update a file in S3, you must wait for the TTL to expire before seeing the change.</li>
+                            <li><strong>Manual Invalidation:</strong> To force an update immediately, create an invalidation in your CloudFront distribution. You can invalidate specific files (e.g., /css/style.css) or everything ('/*'). Be aware that invalidating everything can be costly on very high-traffic sites.</li>
+                         </ul>
+                    `
+                }
+            };
+            
+            const troubleNav = document.getElementById('trouble-nav');
+            const troubleContent = document.getElementById('trouble-content');
+
+            function displayTrouble(issueId) {
+                const issue = troubleData[issueId];
+                troubleContent.innerHTML = `
+                    <h4 class="font-bold text-lg mb-3 text-slate-800">${issue.title}</h4>
+                    <div>${issue.content}</div>
+                `;
+                troubleNav.querySelectorAll('button').forEach(btn => {
+                    const isSelected = btn.dataset.issue === issueId;
+                    btn.classList.toggle('bg-red-100', isSelected && issueId === '403');
+                    btn.classList.toggle('text-red-800', isSelected && issueId === '403');
+                    btn.classList.toggle('border-red-200', isSelected && issueId === '403');
+                    btn.classList.toggle('bg-blue-100', isSelected && issueId !== '403');
+                    btn.classList.toggle('text-blue-800', isSelected && issueId !== '403');
+                    btn.classList.toggle('border-blue-200', isSelected && issueId !== '403');
+                    btn.classList.toggle('bg-slate-100', !isSelected);
+                    btn.classList.toggle('hover:bg-slate-200', !isSelected);
+                });
+            }
+
+            troubleNav.addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if (button) {
+                    displayTrouble(button.dataset.issue);
+                }
+            });
+
+            displayTrouble('403');
+
+        });
+    </script>
+</body>
+</html>
